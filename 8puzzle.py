@@ -46,18 +46,44 @@ class eightPuzzle():
         return [h1, h2, h1 + h2]
 
     def generateNodes(self, currState, cost, heuristic):
-        #print("List in generateNodes function: ", currState)
+        # print("List in generateNodes function: ", currState)
         nodeSuccessors = []
         for i in range(len(currState)):
             # print(i)
             # print(currState)
             if currState[i] == 0:
-                #print("Zero'th position in current node is :", i)
+                # print("Zero'th position in current node is :", i)
                 x = int(i / 3)
                 # print(x)
                 y = int(i % 3)
                 # print(y)
                 break
+
+        ''' move right '''
+        if y >= 0 and y < 2:
+            tempList = copy.copy(currState)
+            tempList[i] = copy.copy(currState[i + 1])
+            tempList[i + 1] = 0
+            pathCost = cost + 1
+            heuristicCost = self.heuristicFunction(
+                tempList, finalState)
+            rightNode = [tempList, currState,
+                         pathCost, heuristicCost[heuristic]]
+            # print("Move right: ", tempList)
+            nodeSuccessors.append(rightNode)
+
+        ''' move left '''
+        if y <= 2 and y > 0:
+            tempList = copy.copy(currState)
+            tempList[i] = copy.copy(currState[i - 1])
+            tempList[i - 1] = 0
+            pathCost = cost + 1
+            heuristicCost = self.heuristicFunction(
+                tempList, finalState)
+            leftNode = [tempList, currState,
+                        pathCost, heuristicCost[heuristic]]
+            # print("Move left: ", tempList)
+            nodeSuccessors.append(leftNode)
 
         ''' move up '''
         if x <= 2 and x > 0:
@@ -82,30 +108,6 @@ class eightPuzzle():
                         pathCost, heuristicCost[heuristic]]
             # print("Move down: ", tempList)
             nodeSuccessors.append(downNode)
-
-        ''' move right '''
-        if y >= 0 and y < 2:
-            tempList = copy.copy(currState)
-            tempList[i] = copy.copy(currState[i + 1])
-            tempList[i + 1] = 0
-            pathCost = cost + 1
-            heuristicCost = self.heuristicFunction(tempList, finalState)
-            rightNode = [tempList, currState,
-                         pathCost, heuristicCost[heuristic]]
-            # print("Move right: ", tempList)
-            nodeSuccessors.append(rightNode)
-
-        ''' move left '''
-        if y <= 2 and y > 0:
-            tempList = copy.copy(currState)
-            tempList[i] = copy.copy(currState[i - 1])
-            tempList[i - 1] = 0
-            pathCost = cost + 1
-            heuristicCost = self.heuristicFunction(tempList, finalState)
-            leftNode = [tempList, currState,
-                        pathCost, heuristicCost[heuristic]]
-            # print("Move left: ", tempList)
-            nodeSuccessors.append(leftNode)
 
         return nodeSuccessors
 
@@ -133,7 +135,7 @@ class eightPuzzle():
                     popIndex = index
             openList.pop(popIndex)
             closedList.append(tempList)
-            print("Path Cost", pathCost)
+            # print("Path Cost", pathCost)
             print("currentState in while loop is: ", currentState)
 
             if currentState == finalState:
@@ -161,7 +163,7 @@ class eightPuzzle():
                         break
                 if notPresent is True:
                     openList.append(node)
-
+            '''
             print("Adding node to closed list", tempList)
             print("******************************************")
             print("Current OpenList length ", len(openList))
@@ -172,6 +174,7 @@ class eightPuzzle():
                 print(closedList[i])
             print("******************************************")
             # time.sleep(3)
+            '''
         return
 
 
