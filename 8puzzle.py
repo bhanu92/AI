@@ -5,9 +5,12 @@ import time
 
 openList = []
 closedList = []
-initialState = [1, 3, 4, 8, 0, 5, 7, 2, 6]
+initialState = []
 finalState = [1, 2, 3, 8, 0, 4, 7, 6, 5]
 # nodeDictionary = {}
+outFiles = ['OutfileHeuristic1.txt',
+            'OutfileHeuristic2.txt',
+            'OutfileHeuristic3.txt']
 
 
 class eightPuzzle():
@@ -42,12 +45,14 @@ class eightPuzzle():
         h2 = self.getManhattanDistance(currState, finState)
         return [h1, h2, h1 + h2]
 
-    def generateNodes(self, currState, cost):
-        # print("List in generateNodes function: ", currState)
+    def generateNodes(self, currState, cost, heuristic):
+        #print("List in generateNodes function: ", currState)
         nodeSuccessors = []
         for i in range(len(currState)):
+            # print(i)
+            # print(currState)
             if currState[i] == 0:
-                # print("Zero'th position in current node is :", i)
+                #print("Zero'th position in current node is :", i)
                 x = int(i / 3)
                 # print(x)
                 y = int(i % 3)
@@ -62,7 +67,7 @@ class eightPuzzle():
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
             finalCost = pathCost + heuristicCost[2]
-            upNode = [tempList, currState, pathCost, heuristicCost[2]]
+            upNode = [tempList, currState, pathCost, heuristicCost[heuristic]]
             # print("Move up: ", tempList)
             nodeSuccessors.append(upNode)
 
@@ -73,7 +78,8 @@ class eightPuzzle():
             tempList[i + 3] = 0
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
-            downNode = [tempList, currState, pathCost, heuristicCost[2]]
+            downNode = [tempList, currState,
+                        pathCost, heuristicCost[heuristic]]
             # print("Move down: ", tempList)
             nodeSuccessors.append(downNode)
 
@@ -84,7 +90,8 @@ class eightPuzzle():
             tempList[i + 1] = 0
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
-            rightNode = [tempList, currState, pathCost, heuristicCost[2]]
+            rightNode = [tempList, currState,
+                         pathCost, heuristicCost[heuristic]]
             # print("Move right: ", tempList)
             nodeSuccessors.append(rightNode)
 
@@ -95,14 +102,15 @@ class eightPuzzle():
             tempList[i - 1] = 0
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
-            leftNode = [tempList, currState, pathCost, heuristicCost[2]]
+            leftNode = [tempList, currState,
+                        pathCost, heuristicCost[heuristic]]
             # print("Move left: ", tempList)
             nodeSuccessors.append(leftNode)
 
         return nodeSuccessors
 
-    def solve(self):
-        j = 1
+    def solve(self, heuristic):
+        j = 0
         # print(i)
         while len(openList) > 0:
             # print("entered while")
@@ -113,8 +121,9 @@ class eightPuzzle():
             minCost = 100
             pathCost = 0
             popIndex = 0
+            tempIndex = []
             for index in range(len(openList)):
-                tempList = openList[index]
+                tempList = copy.copy(openList[index])
                 # print("temp list", tempList)
                 totalCost = tempList[2] + tempList[3]
                 if totalCost < minCost:
@@ -124,12 +133,13 @@ class eightPuzzle():
                     popIndex = index
             openList.pop(popIndex)
             closedList.append(tempList)
+            print("Path Cost", pathCost)
             print("currentState in while loop is: ", currentState)
 
             if currentState == finalState:
                 print("Final State is found")
                 break
-            successors = self.generateNodes(currentState, pathCost)
+            successors = self.generateNodes(currentState, pathCost, heuristic)
             print("Number of successors for node ",
                   currentState, "is ", len(successors))
             for i in range(len(successors)):
@@ -151,6 +161,7 @@ class eightPuzzle():
                         break
                 if notPresent is True:
                     openList.append(node)
+
             print("Adding node to closed list", tempList)
             print("******************************************")
             print("Current OpenList length ", len(openList))
@@ -160,7 +171,7 @@ class eightPuzzle():
             for i in range(len(closedList)):
                 print(closedList[i])
             print("******************************************")
-            time.sleep(3)
+            # time.sleep(3)
         return
 
 
@@ -169,17 +180,37 @@ def main():
     initialState = [1, 2, 3, 7, 0, 4, 6, 8, 5]
     finalState = [1, 2, 3, 6, 5, 4, 0, 7, 8]
     '''
+    try:
+        f = open('inputFile.txt', 'r')
+        for num in f.read().strip().split(','):
+            initialState.append(int(num))
+        f.close()
+    except IOError:
+        print("Unable to open the inputFile.txt")
+        sys.exit()
+
+    if len(initialState) != 9 and len(initialState) != len(set(initialState)):
+        print("Wrong input values in the inputFile.txt")
+        sys.exit()
+    print("Initial State", initialState)
     puzzle = eightPuzzle()
+    '''
     print("Number of displaced tiles = ",
           puzzle.getDisplacedTiles(initialState, finalState))
     print("Manhattan Distance = ", puzzle.getManhattanDistance(
         initialState, finalState))
-
-    initialHeuristic = puzzle.heuristicFunction(initialState, finalState)
-    openList.append([initialState, [], 0, initialHeuristic[2]])
-    print(openList)
-    puzzle.solve()
-    print("Puzzle Solved")
+    '''
+    for i in range(0, 3):
+        initialHeuristic = puzzle.heuristicFunction(
+            initialState, finalState)
+        openList.clear()
+        closedList.clear()
+        openList.append([initialState, [], 0, initialHeuristic[i]])
+        outputFile = open(outFiles[i], 'w')
+        sys.stdout = outputFile
+        print(openList)
+        puzzle.solve(i)
+        print("Puzzle Solved")
 
 
 if __name__ == "__main__":
