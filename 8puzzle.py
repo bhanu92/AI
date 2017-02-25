@@ -26,7 +26,7 @@ class eightPuzzle():
     def getDisplacedTiles(self, currState, finState):
         count = 0
         for i in range(len(currState)):
-            if currState[i] != finState[i]:
+            if currState[i] != finState[i] and currState[i] != 0:
                 count = count + 1
         return count
 
@@ -218,7 +218,7 @@ def main():
         print("Wrong input values in the inputFile.txt")
         sys.exit()
     puzzle = eightPuzzle()
-    for i in range(0, 3):
+    for i in range(1, 3):
         initialHeuristic = puzzle.heuristicFunction(
             initialState, finalState)
         openList.clear()
@@ -233,7 +233,7 @@ def main():
             print(
                 "Solving 8-puzzle with A* algorithm using Manhattan Distance as a heuristic\n")
         else:
-            print("Solving 8 - puzzle with A * algorithm using sum of Displaced Tiles and Manhattan Distance as a heuristic\n")
+            print("Solving 8-puzzle with A* algorithm using sum of Displaced Tiles and Manhattan Distance as a heuristic\n")
 
         print("Initial State of the puzzle: ", initialState)
         print("Final State of the puzzle: ", finalState)
