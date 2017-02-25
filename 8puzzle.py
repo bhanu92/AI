@@ -12,6 +12,8 @@ outFiles = ['OutfileHeuristic1.txt',
             'OutfileHeuristic2.txt',
             'OutfileHeuristic3.txt']
 
+# 3,6,4,0,1,2,8,7,5
+
 
 class eightPuzzle():
     global openList
@@ -68,7 +70,7 @@ class eightPuzzle():
             heuristicCost = self.heuristicFunction(
                 tempList, finalState)
             rightNode = [tempList, currState,
-                         pathCost, heuristicCost[heuristic]]
+                         pathCost, heuristicCost[heuristic], 'right']
             # print("Move right: ", tempList)
             nodeSuccessors.append(rightNode)
 
@@ -81,7 +83,7 @@ class eightPuzzle():
             heuristicCost = self.heuristicFunction(
                 tempList, finalState)
             leftNode = [tempList, currState,
-                        pathCost, heuristicCost[heuristic]]
+                        pathCost, heuristicCost[heuristic], 'left']
             # print("Move left: ", tempList)
             nodeSuccessors.append(leftNode)
 
@@ -93,7 +95,8 @@ class eightPuzzle():
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
             finalCost = pathCost + heuristicCost[2]
-            upNode = [tempList, currState, pathCost, heuristicCost[heuristic]]
+            upNode = [tempList, currState, pathCost,
+                      heuristicCost[heuristic], 'up']
             # print("Move up: ", tempList)
             nodeSuccessors.append(upNode)
 
@@ -105,7 +108,7 @@ class eightPuzzle():
             pathCost = cost + 1
             heuristicCost = self.heuristicFunction(tempList, finalState)
             downNode = [tempList, currState,
-                        pathCost, heuristicCost[heuristic]]
+                        pathCost, heuristicCost[heuristic], 'down']
             # print("Move down: ", tempList)
             nodeSuccessors.append(downNode)
 
@@ -116,9 +119,8 @@ class eightPuzzle():
         # print(i)
         while len(openList) > 0:
             # print("entered while")
-            print(j, "th iteration ")
+            #print(j, "th iteration ")
             # print(openList)
-            j += 1
             currentState = []
             minCost = 100
             pathCost = 0
@@ -133,21 +135,22 @@ class eightPuzzle():
                     currentState = tempList[0]
                     pathCost = tempList[2]
                     popIndex = index
+            closedList.append(openList[popIndex])
+            # print("closedList last element", closedList[-1])
             openList.pop(popIndex)
-            closedList.append(tempList)
-            # print("Path Cost", pathCost)
-            print("currentState in while loop is: ", currentState)
+            # print("closedList", closedList)
+            # print("currentState in while loop is: ", currentState)
 
-            if currentState == finalState:
-                print("Final State is found")
+            if currentState == finalState or j > 1000:
+                print("Final State is found in ", j, " iterations")
                 break
             successors = self.generateNodes(currentState, pathCost, heuristic)
-            print("Number of successors for node ",
-                  currentState, "is ", len(successors))
+            # print("Number of successors for node ",
+            # currentState, "is ", len(successors))
             for i in range(len(successors)):
                 notPresent = True
                 node = successors[i]
-                print("successor", i, " is ", node)
+                # print("successor", i, " is ", node)
                 for i in range(len(closedList)):
                     temp = closedList[i]
                     if temp[0] == node[0] and (node[2] + node[3]) < (temp[2] + temp[3]):
@@ -175,7 +178,26 @@ class eightPuzzle():
             print("******************************************")
             # time.sleep(3)
             '''
+            j += 1
         return
+
+    def shortestPath(self):
+        path = []
+        closedList.reverse()
+        for i in range(len(closedList)):
+            node = copy.copy(closedList[i])
+            if node[0] == finalState:
+                path.append([node[0], node[1], node[4]])
+
+        while True:
+            for i in range(len(closedList)):
+                if path[-1][1] == closedList[i][0]:
+                    path.append([closedList[i][0], closedList[
+                                i][1], closedList[i][4]])
+                    break
+                if path[-1][0] == initialState:
+                    return path
+                    return (path)
 
 
 def main():
@@ -195,24 +217,39 @@ def main():
     if len(initialState) != 9 and len(initialState) != len(set(initialState)):
         print("Wrong input values in the inputFile.txt")
         sys.exit()
-    print("Initial State", initialState)
     puzzle = eightPuzzle()
-    '''
-    print("Number of displaced tiles = ",
-          puzzle.getDisplacedTiles(initialState, finalState))
-    print("Manhattan Distance = ", puzzle.getManhattanDistance(
-        initialState, finalState))
-    '''
     for i in range(0, 3):
         initialHeuristic = puzzle.heuristicFunction(
             initialState, finalState)
         openList.clear()
         closedList.clear()
-        openList.append([initialState, [], 0, initialHeuristic[i]])
+        openList.append([initialState, [], 0, initialHeuristic[i], 'root'])
         outputFile = open(outFiles[i], 'w')
         sys.stdout = outputFile
-        print(openList)
+        if i == 0:
+            print(
+                "Solving 8-puzzle with A* algorithm using Displaced Tiles as a heuristic\n")
+        elif i == 1:
+            print(
+                "Solving 8-puzzle with A* algorithm using Manhattan Distance as a heuristic\n")
+        else:
+            print("Solving 8 - puzzle with A * algorithm using sum of Displaced Tiles and Manhattan Distance as a heuristic\n")
+
+        print("Initial State of the puzzle: ", initialState)
+        print("Final State of the puzzle: ", finalState)
+        # print(openList)
         puzzle.solve(i)
+        print("Total Number of Nodes expanded to find the solution are: ",
+              len(closedList) + len(openList))
+        path = puzzle.shortestPath()
+        path.reverse()
+        print(
+            "\nList Format [Current State, Previous State, gVal, hVal, Action]")
+        for j in range(len(path)):
+            for k in range(len(closedList)):
+                if path[j][0] == closedList[k][0] and path[j][1] == closedList[k][1]:
+                    print(closedList[k])
+                    break
         print("Puzzle Solved")
 
 
